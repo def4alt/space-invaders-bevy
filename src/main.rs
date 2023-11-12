@@ -12,10 +12,10 @@ fn main() {
         .add_systems(
             FixedUpdate,
             (
+                border_check.run_if(not(resource_changed::<EnemyDirection>())),
                 move_down.run_if(resource_changed::<EnemyDirection>()),
                 enemy_movement.run_if(not(resource_changed::<EnemyDirection>())),
-            )
-                .chain(),
+            ),
         )
         .run();
 }
@@ -80,22 +80,29 @@ fn player_movement(
     }
 }
 
-fn enemy_movement(
-    mut enemies_query: Query<&mut Transform, With<Enemy>>,
+fn border_check(
+    enemies_query: Query<&Transform, With<Enemy>>,
     mut direction: ResMut<EnemyDirection>,
 ) {
-    for mut transform in &mut enemies_query {
-        match *direction {
-            EnemyDirection::Left => transform.translation.x -= 10.,
-            EnemyDirection::Right => transform.translation.x += 10.,
-        }
-
+    for transform in &enemies_query {
         if transform.translation.x > 100.0 {
             *direction = EnemyDirection::Left;
         }
 
         if transform.translation.x < -100.0 {
             *direction = EnemyDirection::Right;
+        }
+    }
+}
+
+fn enemy_movement(
+    mut enemies_query: Query<&mut Transform, With<Enemy>>,
+    direction: ResMut<EnemyDirection>,
+) {
+    for mut transform in &mut enemies_query {
+        match *direction {
+            EnemyDirection::Left => transform.translation.x -= 10.,
+            EnemyDirection::Right => transform.translation.x += 10.,
         }
     }
 }
