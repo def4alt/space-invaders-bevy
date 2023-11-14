@@ -2,8 +2,13 @@ use std::time::Duration;
 
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
+const ENEMY_SIZE: Vec3 = Vec3::new(20., 20., 0.);
+const ENEMY_DOWN_SPEED: f32 = 10.;
+const ENEMY_SPEED: f32 = 10.;
+const ENEMY_STARTING_POS: Vec3 = Vec3::new(0., 100., 0.);
+
 #[derive(Component)]
-struct Enemy;
+pub struct Enemy;
 
 #[derive(Resource)]
 enum EnemyDirection {
@@ -41,11 +46,14 @@ fn setup(
         commands.spawn((
             Enemy,
             MaterialMesh2dBundle {
-                mesh: meshes
-                    .add(shape::Quad::new(Vec2::new(10.0, 10.0)).into())
-                    .into(),
+                mesh: meshes.add(shape::Quad::default().into()).into(),
                 material: materials.add(ColorMaterial::from(Color::WHITE)),
-                transform: Transform::from_translation(Vec3::new(-75. + i as f32 * 15.0, 100., 0.)),
+                transform: Transform::from_translation(Vec3::new(
+                    -75. + i as f32 * 25.0,
+                    ENEMY_STARTING_POS.y,
+                    0.,
+                ))
+                .with_scale(ENEMY_SIZE),
                 ..Default::default()
             },
         ));
@@ -72,15 +80,19 @@ fn movement(
     direction: ResMut<EnemyDirection>,
 ) {
     for mut transform in &mut enemies_query {
+        let mut move_direction = Vec3::ZERO;
+
         match *direction {
-            EnemyDirection::Left => transform.translation.x -= 10.,
-            EnemyDirection::Right => transform.translation.x += 10.,
+            EnemyDirection::Left => move_direction.x -= 1.,
+            EnemyDirection::Right => move_direction.x += 1.,
         }
+
+        transform.translation += move_direction * ENEMY_SPEED;
     }
 }
 
 fn move_down(mut enemies_query: Query<&mut Transform, With<Enemy>>) {
     for mut transform in &mut enemies_query {
-        transform.translation.y -= 10.;
+        transform.translation.y -= 1. * ENEMY_DOWN_SPEED;
     }
 }
