@@ -7,7 +7,7 @@ const PLAYER_SPEED: f32 = 160.;
 const INITIAL_PLAYER_POS: Vec3 = Vec3::new(0., -20., 0.);
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
 pub struct PlayerPlugin;
 

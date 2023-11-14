@@ -1,11 +1,15 @@
 use std::time::Duration;
 
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use rand::Rng;
+
+use crate::enemy_bullet::{EnemyBullet, ENEMY_BULLET_SIZE};
 
 const ENEMY_SIZE: Vec3 = Vec3::new(20., 20., 0.);
 const ENEMY_DOWN_SPEED: f32 = 10.;
 const ENEMY_SPEED: f32 = 10.;
 const ENEMY_STARTING_POS: Vec3 = Vec3::new(0., 100., 0.);
+const ENEMY_BORDER: Vec3 = Vec3::new(200., 0., 0.);
 
 #[derive(Component)]
 pub struct Enemy;
@@ -32,6 +36,7 @@ impl Plugin for EnemyPlugin {
                             .and_then(|direction: Res<EnemyDirection>| !direction.is_added()),
                     ),
                     movement.run_if(not(resource_changed::<EnemyDirection>())),
+                    shoot,
                 ),
             );
     }
@@ -60,16 +65,39 @@ fn setup(
     }
 }
 
+fn shoot(
+    mut commands: Commands,
+    enemies: Query<&Transform, With<Enemy>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+) {
+    let mut rng = rand::thread_rng();
+
+    for transform in &enemies {
+        if rng.gen_bool(1. / 30.) {
+            commands.spawn((
+                EnemyBullet,
+                MaterialMesh2dBundle {
+                    transform: transform.clone().with_scale(ENEMY_BULLET_SIZE),
+                    mesh: meshes.add(shape::Quad::default().into()).into(),
+                    material: materials.add(ColorMaterial::from(Color::BLUE)),
+                    ..Default::default()
+                },
+            ));
+        }
+    }
+}
+
 fn border_check(
     enemies_query: Query<&Transform, With<Enemy>>,
     mut direction: ResMut<EnemyDirection>,
 ) {
     for transform in &enemies_query {
-        if transform.translation.x > 100.0 {
+        if transform.translation.x > ENEMY_BORDER.x {
             *direction = EnemyDirection::Left;
         }
 
-        if transform.translation.x < -100.0 {
+        if transform.translation.x < -ENEMY_BORDER.x {
             *direction = EnemyDirection::Right;
         }
     }

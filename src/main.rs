@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 use bullet::BulletPlugin;
 use enemy::EnemyPlugin;
+use enemy_bullet::EnemyBulletPlugin;
 use player::PlayerPlugin;
 
 mod bullet;
 mod enemy;
+mod enemy_bullet;
 mod player;
 
 fn main() {
@@ -14,6 +16,7 @@ fn main() {
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
         .add_plugins(BulletPlugin)
+        .add_plugins(EnemyBulletPlugin)
         .run();
 }
 
