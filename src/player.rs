@@ -1,8 +1,11 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
-use crate::bullet::{Bullet, BULLET_SIZE};
+use crate::{
+    bullet::{Bullet, CollisionBox, Shooter, BULLET_SIZE},
+    SpriteSheets,
+};
 
-const PLAYER_SIZE: Vec3 = Vec3::new(20., 20., 0.);
+const PLAYER_SIZE: Vec3 = Vec3::new(2., 2., 0.);
 const PLAYER_SPEED: f32 = 160.;
 const INITIAL_PLAYER_POS: Vec3 = Vec3::new(0., -20., 0.);
 
@@ -18,19 +21,17 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-) {
+fn setup(mut commands: Commands, handles: Res<SpriteSheets>) {
+    let size = Vec2::new(16., 8.) * PLAYER_SIZE.truncate();
     commands.spawn((
         Player,
-        MaterialMesh2dBundle {
-            mesh: meshes.add(shape::Circle::default().into()).into(),
-            material: materials.add(ColorMaterial::from(Color::WHITE)),
+        SpriteSheetBundle {
+            texture_atlas: handles.map_tiles.clone(),
+            sprite: TextureAtlasSprite::new(0),
             transform: Transform::from_translation(INITIAL_PLAYER_POS).with_scale(PLAYER_SIZE),
             ..Default::default()
         },
+        CollisionBox { dimensions: size },
     ));
 }
 
@@ -72,6 +73,7 @@ fn shoot(
                 material: materials.add(ColorMaterial::from(Color::BLUE)),
                 ..Default::default()
             },
+            Shooter::Player,
         ));
     }
 }

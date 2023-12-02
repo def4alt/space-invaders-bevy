@@ -3,9 +3,12 @@ use std::time::Duration;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::Rng;
 
-use crate::enemy_bullet::{EnemyBullet, ENEMY_BULLET_SIZE};
+use crate::{
+    bullet::{Bullet, CollisionBox, Shooter, BULLET_SIZE},
+    SpriteSheets,
+};
 
-const ENEMY_SIZE: Vec3 = Vec3::new(20., 20., 0.);
+const ENEMY_SIZE: Vec3 = Vec3::new(2., 2., 0.);
 const ENEMY_DOWN_SPEED: f32 = 10.;
 const ENEMY_SPEED: f32 = 10.;
 const ENEMY_STARTING_POS: Vec3 = Vec3::new(0., 100., 0.);
@@ -42,25 +45,23 @@ impl Plugin for EnemyPlugin {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-) {
+fn setup(mut commands: Commands, handles: Res<SpriteSheets>) {
+    let size = Vec2::new(16., 8.) * ENEMY_SIZE.truncate();
     for i in 1..10 {
         commands.spawn((
             Enemy,
-            MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Quad::default().into()).into(),
-                material: materials.add(ColorMaterial::from(Color::WHITE)),
+            SpriteSheetBundle {
+                texture_atlas: handles.map_tiles.clone(),
+                sprite: TextureAtlasSprite::new(1),
                 transform: Transform::from_translation(Vec3::new(
-                    -75. + i as f32 * 25.0,
+                    -75. + i as f32 * 48.0,
                     ENEMY_STARTING_POS.y,
                     0.,
                 ))
                 .with_scale(ENEMY_SIZE),
                 ..Default::default()
             },
+            CollisionBox { dimensions: size },
         ));
     }
 }
@@ -76,13 +77,14 @@ fn shoot(
     for transform in &enemies {
         if rng.gen_bool(1. / 30.) {
             commands.spawn((
-                EnemyBullet,
+                Bullet,
                 MaterialMesh2dBundle {
-                    transform: transform.clone().with_scale(ENEMY_BULLET_SIZE),
+                    transform: transform.clone().with_scale(BULLET_SIZE),
                     mesh: meshes.add(shape::Quad::default().into()).into(),
                     material: materials.add(ColorMaterial::from(Color::BLUE)),
                     ..Default::default()
                 },
+                Shooter::Enemy,
             ));
         }
     }
