@@ -4,7 +4,7 @@ use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::Rng;
 
 use crate::{
-    enemy_bullet::{EnemyBullet, ENEMY_BULLET_SIZE},
+    bullet::{Bullet, Shooter, BULLET_SIZE},
     SpriteSheets,
 };
 
@@ -75,13 +75,14 @@ fn shoot(
     for transform in &enemies {
         if rng.gen_bool(1. / 30.) {
             commands.spawn((
-                EnemyBullet,
+                Bullet,
                 MaterialMesh2dBundle {
-                    transform: transform.clone().with_scale(ENEMY_BULLET_SIZE),
+                    transform: transform.clone().with_scale(BULLET_SIZE),
                     mesh: meshes.add(shape::Quad::default().into()).into(),
                     material: materials.add(ColorMaterial::from(Color::BLUE)),
                     ..Default::default()
                 },
+                Shooter::Enemy,
             ));
         }
     }

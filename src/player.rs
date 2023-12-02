@@ -1,7 +1,7 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 use crate::{
-    bullet::{Bullet, BULLET_SIZE},
+    bullet::{Bullet, Shooter, BULLET_SIZE},
     SpriteSheets,
 };
 
@@ -71,6 +71,7 @@ fn shoot(
                 material: materials.add(ColorMaterial::from(Color::BLUE)),
                 ..Default::default()
             },
+            Shooter::Player,
         ));
     }
 }
