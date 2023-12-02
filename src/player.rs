@@ -1,7 +1,7 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 use crate::{
-    bullet::{Bullet, Shooter, BULLET_SIZE},
+    bullet::{Bullet, CollisionBox, Shooter, BULLET_SIZE},
     SpriteSheets,
 };
 
@@ -22,6 +22,7 @@ impl Plugin for PlayerPlugin {
 }
 
 fn setup(mut commands: Commands, handles: Res<SpriteSheets>) {
+    let size = Vec2::new(16., 8.) * PLAYER_SIZE.truncate();
     commands.spawn((
         Player,
         SpriteSheetBundle {
@@ -30,6 +31,7 @@ fn setup(mut commands: Commands, handles: Res<SpriteSheets>) {
             transform: Transform::from_translation(INITIAL_PLAYER_POS).with_scale(PLAYER_SIZE),
             ..Default::default()
         },
+        CollisionBox { dimensions: size },
     ));
 }
 

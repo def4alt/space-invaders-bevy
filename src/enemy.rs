@@ -4,7 +4,7 @@ use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use rand::Rng;
 
 use crate::{
-    bullet::{Bullet, Shooter, BULLET_SIZE},
+    bullet::{Bullet, CollisionBox, Shooter, BULLET_SIZE},
     SpriteSheets,
 };
 
@@ -46,6 +46,7 @@ impl Plugin for EnemyPlugin {
 }
 
 fn setup(mut commands: Commands, handles: Res<SpriteSheets>) {
+    let size = Vec2::new(16., 8.) * ENEMY_SIZE.truncate();
     for i in 1..10 {
         commands.spawn((
             Enemy,
@@ -60,6 +61,7 @@ fn setup(mut commands: Commands, handles: Res<SpriteSheets>) {
                 .with_scale(ENEMY_SIZE),
                 ..Default::default()
             },
+            CollisionBox { dimensions: size },
         ));
     }
 }

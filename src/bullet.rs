@@ -5,11 +5,17 @@ use crate::{enemy::Enemy, player::Player};
 pub const BULLET_SIZE: Vec3 = Vec3::new(2., 10., 0.);
 const BULLET_SPEED: f32 = 160.;
 const BULLET_TOP_BORDER: f32 = 200.;
+const BULLET_DOWN_BORDER: f32 = -200.;
 
 #[derive(Component)]
 pub enum Shooter {
     Enemy,
     Player,
+}
+
+#[derive(Component)]
+pub struct CollisionBox {
+    pub dimensions: Vec2,
 }
 
 #[derive(Component)]
@@ -24,7 +30,9 @@ impl Plugin for BulletPlugin {
 }
 fn check_borders(mut commands: Commands, bullets: Query<(Entity, &Transform), With<Bullet>>) {
     for (entity, transform) in &bullets {
-        if transform.translation.y > BULLET_TOP_BORDER {
+        if transform.translation.y > BULLET_TOP_BORDER
+            || transform.translation.y < BULLET_DOWN_BORDER
+        {
             commands.entity(entity).despawn();
         }
     }
@@ -43,7 +51,16 @@ fn movement(time: Res<Time>, mut bullets: Query<(&mut Transform, &Shooter), With
 fn check_collision(
     mut commands: Commands,
     bullets: Query<(Entity, &Transform, &Shooter), With<Bullet>>,
-    entities: Query<(Entity, &Transform, Option<&Enemy>, Option<&Player>), Without<Bullet>>,
+    entities: Query<
+        (
+            Entity,
+            &Transform,
+            &CollisionBox,
+            Option<&Enemy>,
+            Option<&Player>,
+        ),
+        Without<Bullet>,
+    >,
 ) {
     for (bullet_entity, bullet_transform, shooter) in &bullets {
         let shooter_is_enemy = match shooter {
@@ -51,7 +68,7 @@ fn check_collision(
             Shooter::Player => false,
         };
 
-        'a: for (entity, transform, enemy, player) in &entities {
+        'a: for (entity, transform, collision_box, enemy, player) in &entities {
             if enemy.is_some() && shooter_is_enemy {
                 continue 'a;
             } else if player.is_some() && !shooter_is_enemy {
@@ -62,7 +79,7 @@ fn check_collision(
                 bullet_transform.translation,
                 bullet_transform.scale.truncate(),
                 transform.translation,
-                transform.scale.truncate(),
+                collision_box.dimensions,
             );
 
             if collision.is_some() {
